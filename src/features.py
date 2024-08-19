@@ -31,8 +31,18 @@ def categorical_to_numerical(dataframe: pd.DataFrame, target_column: str,
     return dataframe
 
 
-def data_split(dataframe: pd.DataFrame, test_size: float,
-               random_state: int) -> tuple[pd.DataFrame, pd.DataFrame]:
+def data_split(dataframe: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    
+    try:
+        parameters = safe_load(open('params.yaml','r'))['data_ingestion']
+        logger.log_message('Parameters read successfully')
+    except FileNotFoundError as e:
+        logger.log_message('Parameters file missing')
+    
+    test_size = parameters['test_size']
+    random_state = parameters['random_state']
+    
+    logger.log_message(f'Parameters : test_size={test_size}  random_state={random_state}')
     
     train_data, test_data = train_test_split(dataframe,
                                              test_size=test_size,
@@ -78,3 +88,28 @@ def scale_data(train_dataframe: pd.DataFrame, test_dataframe: pd.DataFrame,
     logger.info(f"Scaled training data saved to '{train_output_file}' with shape {train_scaled_df.shape}")
     logger.info(f"Scaled test data saved to '{test_output_file}' with shape {test_scaled_df.shape}")
     
+
+
+@app.command()
+def main(
+    target_column = 'Species',
+    input_path: Path = PROCESSED_DATA_DIR / "dataset.csv",
+    output_path: Path = PROCESSED_DATA_DIR / "scaled-data"
+    
+):
+    df = load_dataframe(input_path)
+    
+    dataframe_encoded = categorical_to_numerical(df,target_column)
+    
+    train, test = data_split(dataframe_encoded)
+    
+    columns = train.columns.tolist()
+    columns.remove(target_column)
+    
+    scale_data(train,test,columns,target_column,output_path)
+    
+    logger.success("Features generation complete.")
+
+
+if __name__ == "__main__":
+    app()
