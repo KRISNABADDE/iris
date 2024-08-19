@@ -2,9 +2,7 @@ import typer
 import zipfile
 import pandas as pd
 from loguru import logger
-from tqdm import tqdm
 from pathlib import Path
-from sklearn.model_selection import train_test_split
 from src.config import PROCESSED_DATA_DIR, RAW_DATA_DIR
 
 app = typer.Typer()
@@ -41,3 +39,22 @@ def save_dataframe(dataframe: pd.DataFrame, output_dir_path: Path) -> None:
     dataframe.to_csv(output_dir_path, index=False)
     logger.info(f"DataFrame saved successfully at {output_dir_path} with shape {dataframe.shape}")
     
+    
+@app.command()
+def main(
+    zip_file_path:Path = RAW_DATA_DIR / "iris-dataset.zip",
+    input_path: Path =  RAW_DATA_DIR / 'extracted' / 'iris.csv',
+    output_path: Path = PROCESSED_DATA_DIR / "dataset.csv",
+):
+    
+        extract_files(zip_file_path)
+        df = load_dataframe(input_path)
+    
+        df = drop_column(df,['Id'])
+    
+        save_dataframe(df,output_path)
+        logger.success("Processing dataset complete.")
+
+
+if __name__ == "__main__":
+    app()
