@@ -36,10 +36,13 @@ def components_loader(model_path:Path,
     return model, ordinal_encoder, std_scaler
                          
     
-def predictions(test_dataframe: pd.DataFrame, model: object) -> pd.Series:
+def predictions(test_dataframe: pd.DataFrame, model: object,
+                std_scaler: object) -> pd.Series:
     logger.info("Starting predictions.")
-    
-    pred = model.predict(test_dataframe)
+    columns = test_dataframe.columns.tolist()
+    scaled_features = std_scaler.transform(test_dataframe[columns])
+    features = pd.DataFrame(scaled_features, columns=columns)
+    pred = model.predict(features)
     predictions_series = pd.Series(pred, index=test_dataframe.index)
     logger.info("Predictions completed.")
     return predictions_series
@@ -109,3 +112,32 @@ def val_metrics(prediction: pd.Series, labels: pd.Series,
     logger.info("Evaluation metrics calculation and saving completed.")
     
     return metrics_df
+
+
+@app.command()
+def main(
+    features_path: Path = PROCESSED_DATA_DIR / "scaled-data" / "test_data.csv",
+    model_path: Path = MODELS_DIR / "model.joblib",
+    ordinal_encoder_path: Path = MODELS_DIR / "components" / "ord_encoder.joblib",
+    std_scaler_path: Path = MODELS_DIR / "components" / "stdscaler.joblib",
+    predictions_path: Path = DATA_DIR / "predictions" / "test_predictions.csv",
+    target_column = "Species",
+    metrix_path: Path = REPORTS_DIR / "metrix",
+    metrix_plots_path: Path = REPORTS_DIR / "metrix" / "graphs"
+    
+):
+    model, ordinal_encoder, std_scale = components_loader(model_path,
+                                                          ordinal_encoder_path,
+                                                          std_scaler_path)
+    logger.info("model loaded")
+    logger.info("ordinal_encoder loaded")
+    logger.info("std_scale loaded")
+    
+    df = load_dataframe(features_path)
+    pred = predictions(df.drop(columns=[target_column]),model,std_scale)
+    save_pred_df(df,pred,predictions_path)
+    val_metrics(pred,df[target_column],metrix_path,metrix_plots_path)
+    
+
+if __name__ == "__main__":
+    app()
