@@ -1,30 +1,39 @@
-from pathlib import Path
-
+import joblib
 import typer
+import pandas as pd
 from loguru import logger
-from tqdm import tqdm
+from pathlib import Path
+from src.dataset import load_dataframe
+import matplotlib.pyplot as plt
 
-from src.config import MODELS_DIR, PROCESSED_DATA_DIR
+from sklearn.metrics import(accuracy_score,
+                            confusion_matrix,
+                            ConfusionMatrixDisplay,
+                            f1_score,
+                            precision_score,
+                            recall_score,
+                            precision_recall_curve,
+                            roc_auc_score,
+                            RocCurveDisplay)
+
+from src.config import (MODELS_DIR,
+                        PROCESSED_DATA_DIR, 
+                        DATA_DIR,
+                        REPORTS_DIR)
+
 
 app = typer.Typer()
 
-
-@app.command()
-def main(
-    # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----
-    features_path: Path = PROCESSED_DATA_DIR / "test_features.csv",
-    model_path: Path = MODELS_DIR / "model.pkl",
-    predictions_path: Path = PROCESSED_DATA_DIR / "test_predictions.csv",
-    # -----------------------------------------
-):
-    # ---- REPLACE THIS WITH YOUR OWN CODE ----
-    logger.info("Performing inference for model...")
-    for i in tqdm(range(10), total=10):
-        if i == 5:
-            logger.info("Something happened for iteration 5.")
-    logger.success("Inference complete.")
-    # -----------------------------------------
-
-
-if __name__ == "__main__":
-    app()
+def components_loader(model_path:Path,
+                      ordinal_encoder_path:Path,
+                      std_scaler_path:Path) -> tuple[object,
+                                                   object,
+                                                   object]:
+    model = joblib.load(model_path)
+    ordinal_encoder = joblib.load(ordinal_encoder_path)
+    std_scaler = joblib.load(std_scaler_path)
+    
+    return model, ordinal_encoder, std_scaler
+                         
+    
+   
