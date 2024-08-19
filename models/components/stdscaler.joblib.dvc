@@ -1,0 +1,5 @@
+outs:
+- md5: 943effff22c917ec03400b2ad43064df
+  size: 1079
+  hash: md5
+  path: stdscaler.joblib

@@ -1,0 +1,5 @@
+outs:
+- md5: 93e5ebffd255acbde714d2209b6c0991
+  size: 1072
+  hash: md5
+  path: ord_encoder.joblib
