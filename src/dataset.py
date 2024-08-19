@@ -28,3 +28,9 @@ def load_dataframe(csv_file_path:Path) -> pd.DataFrame:
     df = pd.read_csv(csv_file_path)
     logger.success(f"Dataframe loaded. with shape of {df.shape}")
     return df
+
+
+def drop_column(dataframe: pd.DataFrame, column_name: list) -> pd.DataFrame:
+    df = dataframe.drop(columns=column_name)
+    logger.info(f"Columns dropped: {', '.join(column_name)}")
+    return df
