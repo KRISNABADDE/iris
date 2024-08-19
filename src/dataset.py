@@ -22,3 +22,9 @@ def extract_files(RAW_DATA_DIR: Path, file_name: str)-> None:
 
     logger.success("Unzip datafile complete.")
     
+
+def load_dataframe(csv_file_path:Path) -> pd.DataFrame:
+
+    df = pd.read_csv(csv_file_path)
+    logger.success(f"Dataframe loaded. with shape of {df.shape}")
+    return df
