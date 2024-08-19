@@ -1,3 +1,7 @@
 data_ingestion:
-  test_size: 0.2
+  test_size: 0.3
   random_state: 42
+
+train:
+  C: 0.7
+  lr: 0.001

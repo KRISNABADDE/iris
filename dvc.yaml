@@ -1,0 +1,25 @@
+# Type dvc-help in this file and hit enter to get more information on how the extension can help to setup pipelines
+stages:
+  dataset_processing:
+    cmd: python src\dataset.py
+    deps:
+      - src\dataset.py
+  features_creation:
+    cmd: python src\features.py
+    deps:
+      - src\dataset.py
+      - src\features.py
+  
+  train:
+    cmd: python src\modeling\train.py
+    deps:
+      - src\dataset.py
+      - src\features.py
+      - src\modeling\train.py
+
+  predictions:
+    cmd: python src\modeling\train.py
+    deps:
+      - src\dataset.py
+      - src\features.py
+      - src\modeling\train.py

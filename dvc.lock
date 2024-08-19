@@ -1,0 +1,50 @@
+schema: '2.0'
+stages:
+  train:
+    cmd: python src\modeling\train.py
+    deps:
+    - path: src\dataset.py
+      hash: md5
+      md5: cd4c82d7b93ea8f8dc935f96700dffef
+      size: 1631
+    - path: src\features.py
+      hash: md5
+      md5: 1ffe55dc13105441aac19c7bd360b6cb
+      size: 4012
+    - path: src\modeling\train.py
+      hash: md5
+      md5: ce973d3aab631404490e42288dcbccac
+      size: 1149
+  dataset_processing:
+    cmd: python src\dataset.py
+    deps:
+    - path: src\dataset.py
+      hash: md5
+      md5: cd4c82d7b93ea8f8dc935f96700dffef
+      size: 1631
+  predictions:
+    cmd: python src\modeling\train.py
+    deps:
+    - path: src\dataset.py
+      hash: md5
+      md5: cd4c82d7b93ea8f8dc935f96700dffef
+      size: 1631
+    - path: src\features.py
+      hash: md5
+      md5: 1ffe55dc13105441aac19c7bd360b6cb
+      size: 4012
+    - path: src\modeling\train.py
+      hash: md5
+      md5: ce973d3aab631404490e42288dcbccac
+      size: 1149
+  features_creation:
+    cmd: python src\features.py
+    deps:
+    - path: src\dataset.py
+      hash: md5
+      md5: cd4c82d7b93ea8f8dc935f96700dffef
+      size: 1631
+    - path: src\features.py
+      hash: md5
+      md5: 1ffe55dc13105441aac19c7bd360b6cb
+      size: 4012
