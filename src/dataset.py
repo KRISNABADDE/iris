@@ -34,3 +34,10 @@ def drop_column(dataframe: pd.DataFrame, column_name: list) -> pd.DataFrame:
     df = dataframe.drop(columns=column_name)
     logger.info(f"Columns dropped: {', '.join(column_name)}")
     return df
+
+
+def save_dataframe(dataframe: pd.DataFrame, output_dir_path: Path) -> None:
+   
+    dataframe.to_csv(output_dir_path, index=False)
+    logger.info(f"DataFrame saved successfully at {output_dir_path} with shape {dataframe.shape}")
+    
