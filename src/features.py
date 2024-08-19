@@ -65,27 +65,23 @@ def scale_data(train_dataframe: pd.DataFrame, test_dataframe: pd.DataFrame,
 
     scaler = StandardScaler()
     train_scaled = scaler.fit_transform(train_dataframe[columns])
-    test_scaled = scaler.transform(test_dataframe[columns])
     
     scaler_file_path = components_dir / "stdscaler.joblib"
     joblib.dump(scaler,scaler_file_path)
     
     train_scaled_df = pd.DataFrame(train_scaled, columns=columns)
-    test_scaled_df = pd.DataFrame(test_scaled, columns=columns)
-    
     train_scaled_df[target_column] = train_dataframe[target_column].reset_index(drop=True)
-    test_scaled_df[target_column] = test_dataframe[target_column].reset_index(drop=True)
     
     output_dir.mkdir(parents=True, exist_ok=True)
 
     train_output_file = output_dir / 'scaled_train_data.csv'
-    test_output_file = output_dir / 'scaled_test_data.csv'
+    test_output_file = output_dir / 'test_data.csv'
 
     train_scaled_df.to_csv(train_output_file, index=False)
-    test_scaled_df.to_csv(test_output_file, index=False)
+    test_dataframe.to_csv(test_output_file, index=False)
 
     logger.info(f"Scaled training data saved to '{train_output_file}' with shape {train_scaled_df.shape}")
-    logger.info(f"Scaled test data saved to '{test_output_file}' with shape {test_scaled_df.shape}")
+    logger.info(f"Non Scaled test data saved to '{test_output_file}' with shape {test_dataframe.shape}")
     
 
 
