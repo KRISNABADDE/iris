@@ -7,7 +7,6 @@ from pathlib import Path
 from src.dataset import load_dataframe
 from src.config import PROCESSED_DATA_DIR, COMPONENTS_DIR
 from sklearn.model_selection import train_test_split
-from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import (StandardScaler,
                                    OrdinalEncoder)
 app = typer.Typer()
@@ -35,14 +34,14 @@ def data_split(dataframe: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     
     try:
         parameters = safe_load(open('params.yaml','r'))['data_ingestion']
-        logger.log_message('Parameters read successfully')
+        logger.info('Parameters read successfully')
     except FileNotFoundError as e:
-        logger.log_message('Parameters file missing')
+        logger.info('Parameters file missing')
     
     test_size = parameters['test_size']
     random_state = parameters['random_state']
     
-    logger.log_message(f'Parameters : test_size={test_size}  random_state={random_state}')
+    logger.info(f'Parameters : test_size={test_size}  random_state={random_state}')
     
     train_data, test_data = train_test_split(dataframe,
                                              test_size=test_size,
@@ -99,14 +98,14 @@ def main(
 ):
     df = load_dataframe(input_path)
     
-    dataframe_encoded = categorical_to_numerical(df,target_column)
+    dataframe_encoded = categorical_to_numerical(df,target_column,COMPONENTS_DIR)
     
     train, test = data_split(dataframe_encoded)
     
     columns = train.columns.tolist()
     columns.remove(target_column)
     
-    scale_data(train,test,columns,target_column,output_path)
+    scale_data(train,test,columns,target_column,output_path,COMPONENTS_DIR)
     
     logger.success("Features generation complete.")
 
