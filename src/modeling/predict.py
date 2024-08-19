@@ -36,4 +36,12 @@ def components_loader(model_path:Path,
     return model, ordinal_encoder, std_scaler
                          
     
-   
+def predictions(test_dataframe: pd.DataFrame, model: object) -> pd.Series:
+    logger.info("Starting predictions.")
+    
+    pred = model.predict(test_dataframe)
+    predictions_series = pd.Series(pred, index=test_dataframe.index)
+    logger.info("Predictions completed.")
+    return predictions_series
+
+
