@@ -45,3 +45,15 @@ def predictions(test_dataframe: pd.DataFrame, model: object) -> pd.Series:
     return predictions_series
 
 
+def save_pred_df(test_dataframe: pd.DataFrame, prediction: pd.Series, csv_file_path: Path) -> None:
+    logger.info("Starting to save predictions to CSV.")
+    
+    predictions_path: Path = DATA_DIR / "predictions"
+    predictions_path.mkdir(parents=True,exist_ok=True)
+    dataframe_with_pred = test_dataframe.copy()
+    dataframe_with_pred["predictions"] = prediction.reset_index(drop=True)
+    
+    dataframe_with_pred.to_csv(csv_file_path,index=False)
+    
+    logger.info(f"""Predictions saved successfully to {csv_file_path} 
+                with shape {dataframe_with_pred.shape}""")
