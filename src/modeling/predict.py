@@ -57,3 +57,55 @@ def save_pred_df(test_dataframe: pd.DataFrame, prediction: pd.Series, csv_file_p
     
     logger.info(f"""Predictions saved successfully to {csv_file_path} 
                 with shape {dataframe_with_pred.shape}""")
+    
+    
+def val_metrics(prediction: pd.Series, labels: pd.Series,
+                metrix_file_dir: Path, metrics_plot_dir: Path) -> pd.DataFrame:
+    
+    logger.info("Starting the calculation of evaluation metrics.")
+    
+    accuracy = accuracy_score(labels, prediction)
+    confusion_mat = confusion_matrix(labels, prediction)
+    precision_s = precision_score(labels, prediction, average='macro')
+    recall_s = recall_score(labels, prediction, average='macro')
+    f1_s = f1_score(labels, prediction, average='macro')
+    
+    try:
+        roc_auc_s = roc_auc_score(labels, prediction, multi_class="ovr", average="macro")
+        logger.info("ROC AUC Score calculated successfully.")
+    except ValueError:
+        roc_auc_s = None
+        logger.warning("ROC AUC Score could not be calculated.")
+    
+    metrix_file_dir.mkdir(parents=True, exist_ok=True)
+    metrics_plot_dir.mkdir(parents=True, exist_ok=True)
+    
+    confusion_plot_path = metrics_plot_dir / "confusion_matrix.png"
+    disp = ConfusionMatrixDisplay(confusion_matrix=confusion_mat)
+    disp.plot()
+    plt.title("Confusion Matrix")
+    plt.savefig(confusion_plot_path)
+    plt.close()
+    logger.info(f"Confusion matrix plot saved at {confusion_plot_path}.")
+    
+    if roc_auc_s is not None:
+        roc_plot_path = metrics_plot_dir / "roc_curve.png"
+        RocCurveDisplay.from_predictions(labels, prediction)
+        plt.title("ROC Curve")
+        plt.savefig(roc_plot_path)
+        plt.close()
+        logger.info(f"ROC curve plot saved at {roc_plot_path}.")
+    
+    metrics_df = pd.DataFrame({
+        'Metric': ['Accuracy', 'Precision', 'Recall', 'F1 Score', 'ROC AUC'],
+        'Value': [accuracy, precision_s, recall_s, f1_s, roc_auc_s]
+    })
+    metrics_df.set_index('Metric', inplace=True)
+    
+    metrics_csv_path = metrix_file_dir / "metrics.csv"
+    metrics_df.to_csv(metrics_csv_path)
+    logger.info(f"Metrics DataFrame saved at {metrics_csv_path}.")
+    
+    logger.info("Evaluation metrics calculation and saving completed.")
+    
+    return metrics_df
