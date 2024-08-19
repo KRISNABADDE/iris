@@ -23,8 +23,8 @@ def categorical_to_numerical(dataframe: pd.DataFrame, target_column: str,
     ord_encoder = OrdinalEncoder()
     dataframe[target_column] = ord_encoder.fit_transform(dataframe[[target_column]])
     
-    components_file_path = components_dir / "ord_encoder.joblib"
-    joblib.dump(ord_encoder,components_file_path)
+    ord_encoder_file_path = components_dir / "ord_encoder.joblib"
+    joblib.dump(ord_encoder,ord_encoder_file_path)
     
     logger.info("Conversion complete. Returning the transformed DataFrame.")
     
@@ -43,4 +43,38 @@ def data_split(dataframe: pd.DataFrame, test_size: float,
     return train_data, test_data
 
 
+def scale_data(train_dataframe: pd.DataFrame, test_dataframe: pd.DataFrame,
+               columns: list, target_column: str, output_dir: Path,
+               components_dir: Path) -> None:
+    
+    if not columns:
+        raise ValueError("The columns list is empty or None.")
 
+    for column in columns:
+        if column not in train_dataframe.columns:
+            raise ValueError(f"Column '{column}' does not exist in the training DataFrame.")
+
+    scaler = StandardScaler()
+    train_scaled = scaler.fit_transform(train_dataframe[columns])
+    test_scaled = scaler.transform(test_dataframe[columns])
+    
+    scaler_file_path = components_dir / "stdscaler.joblib"
+    joblib.dump(scaler,scaler_file_path)
+    
+    train_scaled_df = pd.DataFrame(train_scaled, columns=columns)
+    test_scaled_df = pd.DataFrame(test_scaled, columns=columns)
+    
+    train_scaled_df[target_column] = train_dataframe[target_column].reset_index(drop=True)
+    test_scaled_df[target_column] = test_dataframe[target_column].reset_index(drop=True)
+    
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    train_output_file = output_dir / 'scaled_train_data.csv'
+    test_output_file = output_dir / 'scaled_test_data.csv'
+
+    train_scaled_df.to_csv(train_output_file, index=False)
+    test_scaled_df.to_csv(test_output_file, index=False)
+
+    logger.info(f"Scaled training data saved to '{train_output_file}' with shape {train_scaled_df.shape}")
+    logger.info(f"Scaled test data saved to '{test_output_file}' with shape {test_scaled_df.shape}")
+    
