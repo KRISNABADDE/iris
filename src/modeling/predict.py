@@ -4,6 +4,7 @@ import pandas as pd
 from loguru import logger
 from pathlib import Path
 from src.dataset import load_dataframe
+from src.mlflow_tracking.tracking import mlflow_tracking
 import matplotlib.pyplot as plt
 
 from sklearn.metrics import(accuracy_score,
@@ -61,7 +62,7 @@ def save_pred_df(test_dataframe: pd.DataFrame, prediction: pd.Series, csv_file_p
     logger.info(f"""Predictions saved successfully to {csv_file_path} 
                 with shape {dataframe_with_pred.shape}""")
     
-    
+
 def val_metrics(prediction: pd.Series, labels: pd.Series,
                 metrix_file_dir: Path, metrics_plot_dir: Path) -> pd.DataFrame:
     
@@ -99,10 +100,16 @@ def val_metrics(prediction: pd.Series, labels: pd.Series,
         plt.close()
         logger.info(f"ROC curve plot saved at {roc_plot_path}.")
     
-    metrics_df = pd.DataFrame({
-        'Metric': ['Accuracy', 'Precision', 'Recall', 'F1 Score', 'ROC AUC'],
-        'Value': [accuracy, precision_s, recall_s, f1_s, roc_auc_s]
-    })
+    metrics_data = {
+        'Metric': ['Accuracy', 'Precision', 'Recall', 'F1 Score'],
+        'Value': [accuracy, precision_s, recall_s, f1_s]
+    }
+    
+    if roc_auc_s is not None:
+        metrics_data['Metric'].append('ROC AUC')
+        metrics_data['Value'].append(roc_auc_s)
+    
+    metrics_df = pd.DataFrame(metrics_data)
     metrics_df.set_index('Metric', inplace=True)
     
     metrics_csv_path = metrix_file_dir / "metrics.csv"
@@ -136,8 +143,8 @@ def main(
     df = load_dataframe(features_path)
     pred = predictions(df.drop(columns=[target_column]),model,std_scale)
     save_pred_df(df,pred,predictions_path)
-    val_metrics(pred,df[target_column],metrix_path,metrix_plots_path)
-    
+    metrics_df = val_metrics(pred,df[target_column],metrix_path,metrix_plots_path)
+    mlflow_tracking(model.get_params(),metrics_df.to_dict())
 
 if __name__ == "__main__":
     app()
