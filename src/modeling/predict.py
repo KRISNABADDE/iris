@@ -144,7 +144,8 @@ def main(
     pred = predictions(df.drop(columns=[target_column]),model,std_scale)
     save_pred_df(df,pred,predictions_path)
     metrics_df = val_metrics(pred,df[target_column],metrix_path,metrix_plots_path)
-    mlflow_tracking(model.get_params(),metrics_df.to_dict())
+    metrics = metrics_df.to_dict()['Value']
+    mlflow_tracking(model.get_params(),metrics=metrics)
 
 if __name__ == "__main__":
     app()
